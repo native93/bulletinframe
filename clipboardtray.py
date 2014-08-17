@@ -30,6 +30,7 @@ from jarabe.frame.clipboardicon import ClipboardIcon
 from jarabe.frame import friendstray
 from jarabe.model import neighborhood
 from jarabe.model import filetransfer
+from jarabe.model.buddy import get_owner_instance
 from sugar3 import mime
 
 
@@ -103,8 +104,13 @@ class ClipboardTray(tray.VTray):
             buddies = neighborhood.get_model().get_buddies()
             mime_type = mime.get_for_file(file_name)
             title = os.path.basename(file_name)
-            for buddy in buddies:
-                filetransfer.start_transfer(buddy, file_name, title, "dummy", mime_type)
+            dialog = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.INFO, Gtk.ButtonsType.YES_NO, "Do you want to start file transfer ?")
+            response = dialog.run()
+            dialog.destroy()
+            if response == Gtk.ResponseType.YES:
+                for buddy in buddies:
+                    if buddy != get_owner_instance():
+                        filetransfer.start_transfer(buddy, file_name, title, "dummy", mime_type)
             cb_service.add_object_format(object_id,
                                          selection_type,
                                          uris[0],
